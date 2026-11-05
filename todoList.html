@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="ja">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#f6f4ee">
+	<title>TODOリスト</title>
+	<style>
+		:root {
+			color-scheme: light;
+			--paper: #f6f4ee;
+			--ink: #252721;
+			--muted: #77796f;
+			--line: #deddd4;
+			--accent: #d65e43;
+			--accent-dark: #a63e2a;
+			--green: #587b63;
+			--white: #fffefa;
+		}
+
+		* { box-sizing: border-box; }
+
+		body {
+			min-height: 100vh;
+			margin: 0;
+			color: var(--ink);
+			background-color: var(--paper);
+			background-image: radial-gradient(#d8d5ca 0.65px, transparent 0.65px);
+			background-size: 13px 13px;
+			font-family: "Yu Gothic UI", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+		}
+
+		button, input { font: inherit; }
+		button { color: inherit; }
+
+		.page {
+			width: min(100% - 36px, 720px);
+			margin: 0 auto;
+			padding: 52px 0 64px;
+		}
+
+		.topline {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding-bottom: 15px;
+			border-bottom: 1px solid var(--line);
+			color: var(--muted);
+			font-size: 12px;
+			letter-spacing: 0.08em;
+		}
+
+		.brand { color: var(--accent-dark); font-weight: 800; }
+		header { padding: 34px 0 27px; }
+
+		h1 {
+			margin: 0;
+			font-family: "Yu Mincho", "Hiragino Mincho ProN", "Noto Serif JP", serif;
+			font-size: clamp(36px, 9vw, 58px);
+			font-weight: 700;
+			line-height: 1.2;
+		}
+
+		.subtitle { margin: 12px 0 0; color: var(--muted); font-size: 14px; }
+
+		.composer {
+			display: flex;
+			gap: 10px;
+			padding: 8px;
+			border: 1px solid var(--line);
+			border-radius: 5px;
+			background: var(--white);
+			box-shadow: 0 5px 16px #3936270b;
+		}
+
+		.composer input {
+			width: 100%;
+			min-width: 0;
+			padding: 12px 13px;
+			border: 0;
+			outline: 0;
+			background: transparent;
+			color: var(--ink);
+			font-size: 15px;
+		}
+
+		.composer:focus-within { border-color: var(--accent); }
+
+		.add-button {
+			flex: 0 0 auto;
+			min-width: 92px;
+			padding: 0 17px;
+			border: 0;
+			border-radius: 3px;
+			background: var(--accent);
+			color: white;
+			font-weight: 700;
+			cursor: pointer;
+			transition: background 150ms ease, transform 150ms ease;
+		}
+
+		.add-button:hover { background: var(--accent-dark); }
+		.add-button:active { transform: translateY(1px); }
+
+		.list-heading {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 15px;
+			margin-top: 37px;
+			padding-bottom: 12px;
+			border-bottom: 1px solid var(--line);
+		}
+
+		.count { font-size: 13px; font-weight: 700; }
+		.count span { color: var(--accent-dark); }
+		.filters { display: flex; gap: 4px; }
+
+		.filter {
+			padding: 7px 10px;
+			border: 0;
+			border-radius: 3px;
+			background: transparent;
+			color: var(--muted);
+			font-size: 12px;
+			cursor: pointer;
+		}
+
+		.filter:hover { color: var(--ink); background: #eae8df; }
+		.filter[aria-pressed="true"] { background: var(--ink); color: white; }
+		.task-list { margin: 0; padding: 0; list-style: none; }
+
+		.task {
+			display: flex;
+			align-items: center;
+			gap: 13px;
+			min-height: 60px;
+			padding: 10px 4px;
+			border-bottom: 1px solid var(--line);
+			animation: arrive 220ms ease both;
+		}
+
+		@keyframes arrive {
+			from { opacity: 0; transform: translateY(5px); }
+			to { opacity: 1; transform: translateY(0); }
+		}
+
+		.check {
+			display: grid;
+			flex: 0 0 22px;
+			width: 22px;
+			height: 22px;
+			place-items: center;
+			padding: 0;
+			border: 1.5px solid #a6a69c;
+			border-radius: 50%;
+			background: transparent;
+			cursor: pointer;
+		}
+
+		.check:hover { border-color: var(--green); }
+		.check[aria-pressed="true"] { border-color: var(--green); background: var(--green); color: white; }
+
+		.task-text {
+			flex: 1;
+			min-width: 0;
+			overflow-wrap: anywhere;
+			font-size: 15px;
+			line-height: 1.6;
+		}
+
+		.task.is-done .task-text { color: #92938b; text-decoration: line-through; }
+
+		.delete {
+			display: grid;
+			flex: 0 0 34px;
+			width: 34px;
+			height: 34px;
+			place-items: center;
+			border: 0;
+			border-radius: 3px;
+			background: transparent;
+			color: #92938b;
+			font-size: 20px;
+			cursor: pointer;
+		}
+
+		.delete:hover { background: #f0dfda; color: var(--accent-dark); }
+
+		.empty {
+			padding: 38px 12px;
+			color: var(--muted);
+			text-align: center;
+			font-size: 14px;
+		}
+
+		.footer {
+			display: flex;
+			justify-content: space-between;
+			gap: 12px;
+			padding-top: 15px;
+			color: var(--muted);
+			font-size: 12px;
+		}
+
+		.clear-button {
+			padding: 0;
+			border: 0;
+			background: transparent;
+			color: var(--muted);
+			text-decoration: underline;
+			text-underline-offset: 3px;
+			cursor: pointer;
+		}
+
+		.clear-button:hover { color: var(--accent-dark); }
+		button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+		@media (max-width: 480px) {
+			.page { width: min(100% - 28px, 720px); padding-top: 30px; }
+			header { padding-top: 28px; }
+			.list-heading { align-items: flex-start; flex-direction: column; gap: 10px; }
+			.filters { width: 100%; }
+			.filter { flex: 1; }
+			.add-button { min-width: 76px; padding: 0 12px; }
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			*, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+		}
+	</style>
+</head>
+<body>
+	<main class="page">
+		<div class="topline">
+			<span class="brand">DAILY NOTES</span>
+			<span id="today"></span>
+		</div>
+
+		<header>
+			<h1>やることリスト</h1>
+			<p class="subtitle">ひとつずつ、今日のペースで。</p>
+		</header>
+
+		<form class="composer" id="task-form">
+			<input id="task-input" type="text" maxlength="200" placeholder="次にやることを書く..." aria-label="新しいタスク" autocomplete="off" required>
+			<button class="add-button" type="submit">追加 <span aria-hidden="true">＋</span></button>
+		</form>
+
+		<section aria-label="タスク一覧">
+			<div class="list-heading">
+				<div class="count" id="count" aria-live="polite"></div>
+				<nav class="filters" aria-label="タスクの絞り込み">
+					<button class="filter" type="button" data-filter="all" aria-pressed="true">すべて</button>
+					<button class="filter" type="button" data-filter="active" aria-pressed="false">未完了</button>
+					<button class="filter" type="button" data-filter="done" aria-pressed="false">完了済み</button>
+				</nav>
+			</div>
+			<ul class="task-list" id="task-list"></ul>
+			<div class="empty" id="empty-state" hidden></div>
+			<div class="footer">
+				<span id="remaining"></span>
+				<button class="clear-button" id="clear-done" type="button">完了済みを削除</button>
+			</div>
+		</section>
+	</main>
+
+	<script>
+		// 画面の要素とタスクデータを管理する変数を用意する
+		const storageKey = "daily-notes-tasks-v1";
+		const form = document.querySelector("#task-form");
+		const input = document.querySelector("#task-input");
+		const list = document.querySelector("#task-list");
+		const count = document.querySelector("#count");
+		const remaining = document.querySelector("#remaining");
+		const emptyState = document.querySelector("#empty-state");
+		let activeFilter = "all";
+		let tasks = loadTasks();
+
+		// 今日の日付を日本語の年月日・曜日形式で表示する
+		document.querySelector("#today").textContent = new Intl.DateTimeFormat("ja-JP", {
+			year: "numeric", month: "long", day: "numeric", weekday: "short"
+		}).format(new Date());
+
+		// ブラウザーに保存されたタスクを読み込む。形式が不正な場合は空の一覧にする
+		function loadTasks() {
+			try {
+				const saved = JSON.parse(localStorage.getItem(storageKey) || "[]");
+				return Array.isArray(saved) ? saved.filter((task) => task && typeof task.text === "string") : [];
+			} catch {
+				return [];
+			}
+		}
+
+		// 現在のタスク一覧をブラウザーに保存する
+		function saveTasks() {
+			try {
+				localStorage.setItem(storageKey, JSON.stringify(tasks));
+			} catch {
+				remaining.textContent = "保存できませんでした。ブラウザーの設定をご確認ください。";
+			}
+		}
+
+		// タスク数・絞り込み結果・各タスクの表示を最新の状態に更新する
+		function render() {
+			// 未完了数を表示し、前回のタスク表示をいったん空にする
+			const unfinished = tasks.filter((task) => !task.done).length;
+			count.innerHTML = `タスク <span>${unfinished}</span> 件`;
+			remaining.textContent = unfinished === 0 ? "すべて完了しました" : `あと ${unfinished} 件`;
+			list.replaceChildren();
+
+			// 選択中のフィルターに合うタスクだけを表示対象にする
+			const visibleTasks = tasks.filter((task) => {
+				if (activeFilter === "active") return !task.done;
+				if (activeFilter === "done") return task.done;
+				return true;
+			});
+
+			// 表示対象ごとに、完了切り替え・タスク名・削除ボタンを作成する
+			visibleTasks.forEach((task) => {
+				const item = document.createElement("li");
+				item.className = `task${task.done ? " is-done" : ""}`;
+
+				// 完了ボタンを押したら状態を反転し、保存して一覧を描き直す
+				const check = document.createElement("button");
+				check.className = "check";
+				check.type = "button";
+				check.setAttribute("aria-label", task.done ? "未完了に戻す" : "完了にする");
+				check.setAttribute("aria-pressed", String(task.done));
+				check.textContent = task.done ? "✓" : "";
+				check.addEventListener("click", () => {
+					task.done = !task.done;
+					saveTasks();
+					render();
+				});
+
+				// タスク名はテキストとして設定し、そのまま画面に表示する
+				const text = document.createElement("span");
+				text.className = "task-text";
+				text.textContent = task.text;
+
+				// 削除ボタンを押したタスクを一覧から取り除く
+				const remove = document.createElement("button");
+				remove.className = "delete";
+				remove.type = "button";
+				remove.setAttribute("aria-label", `「${task.text}」を削除`);
+				remove.textContent = "×";
+				remove.addEventListener("click", () => {
+					tasks = tasks.filter((entry) => entry.id !== task.id);
+					saveTasks();
+					render();
+				});
+
+				item.append(check, text, remove);
+				list.append(item);
+			});
+
+			// 表示対象がないときは、一覧全体の状態に応じた案内を表示する
+			emptyState.hidden = visibleTasks.length > 0;
+			if (visibleTasks.length === 0) {
+				emptyState.textContent = tasks.length === 0
+					? "タスクはまだありません。上の入力欄から追加しましょう。"
+					: activeFilter === "active" ? "未完了のタスクはありません。" : "該当するタスクはありません。";
+			}
+		}
+
+		// 入力フォームの送信時に、新しい未完了タスクを追加する
+		form.addEventListener("submit", (event) => {
+			event.preventDefault();
+			const text = input.value.trim();
+			if (!text) return;
+			tasks.unshift({ id: `${Date.now()}-${Math.random()}`, text, done: false });
+			input.value = "";
+			saveTasks();
+			render();
+			input.focus();
+		});
+
+		// 絞り込みボタンを押したら選択状態を更新して、該当タスクを表示する
+		document.querySelectorAll(".filter").forEach((button) => {
+			button.addEventListener("click", () => {
+				activeFilter = button.dataset.filter;
+				document.querySelectorAll(".filter").forEach((filter) => {
+					filter.setAttribute("aria-pressed", String(filter === button));
+				});
+				render();
+			});
+		});
+
+		// 完了済みタスクをすべて取り除く
+		document.querySelector("#clear-done").addEventListener("click", () => {
+			tasks = tasks.filter((task) => !task.done);
+			saveTasks();
+			render();
+		});
+
+		// 保存済みタスクを含め、初期画面を描画する
+		render();
+	</script>
+</body>
+</html>
